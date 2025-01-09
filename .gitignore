@@ -1,0 +1,14 @@
+# environment variables
+.env
+
+# dependancies
+node_modules/
+
+# intermediate opengraph images
+/import
+/export
+
+# ignore OS generated files
+ehthumbs.db
+Thumbs.db
+.DS_Store
