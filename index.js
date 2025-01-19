@@ -58,9 +58,9 @@ const path = require('node:path');
   };
 
   const createGeoJson = async (fitJson, filename) => {
-    
+
     console.log('Transforming json to GeoJson...');
-    
+
     let geo = {};
 
     geo.type = 'FeatureCollection';
@@ -93,10 +93,15 @@ const path = require('node:path');
       let idx_records = 0;
 
       for (idx_records = 0; idx_records < fitJson.records.length; idx_records++) {
-        const lnglat = [fitJson.records[idx_records].position_long, fitJson.records[idx_records].position_lat];
-        geo.features[0].geometry.coordinates.push(lnglat);
+        if (fitJson.records[idx_records].position_long && fitJson.records[idx_records].position_lat) {
+          const lnglat = [fitJson.records[idx_records].position_long, fitJson.records[idx_records].position_lat];
+          geo.features[0].geometry.coordinates.push(lnglat);
+        }
       }
     }
+
+    geo.features[0].properties.start = geo.features[0].geometry.coordinates[0];
+    geo.features[0].properties.end = geo.features[0].geometry.coordinates[geo.features[0].geometry.coordinates.length -1];
 
     try {
       await fs.writeFileSync('./export/' + filename + '.geojson', JSON.stringify(geo));
@@ -108,7 +113,7 @@ const path = require('node:path');
   };
 
   const createDocument = async (fitJSON, filename) => {
-    
+
     console.log('Starting to create MarkDown document...');
 
     var fileContent = [];
@@ -146,7 +151,7 @@ const path = require('node:path');
     fileContent.push('geojson: /geojson/' + filename + '.geojson');
     fileContent.push('category: exercise');
     fileContent.push('---');
-    
+
     const mdContents = fileContent.join('\n').toString('base64');
 
     fs.writeFile('./export/' + filename + '.md', mdContents, (err) => {
@@ -160,7 +165,7 @@ const path = require('node:path');
   };
 
   const filepath = './import/test.fit';
-  const filename = 'test';
+  const filename = Date.now().valueOf();
 
   const fitFileContents = await readFitFile(filepath);
   const fitJson = await tranformFitData(fitFileContents);
