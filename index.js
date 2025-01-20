@@ -152,9 +152,33 @@ const path = require('node:path');
     fileContent.push('category: exercise');
     fileContent.push('---');
 
+    const year = fitJSON.activity.timestamp.getFullYear();
+    const month = (fitJSON.activity.timestamp.getMonth() + 1).toString().padStart(2, '0');
+    const exportDir = 'export';
+    const filepath = exportDir + '/' + year + '/' + month + '/' + filename + '.md';
+
     const mdContents = fileContent.join('\n').toString('base64');
 
-    fs.writeFile('./export/' + filename + '.md', mdContents, (err) => {
+    // Make the year folder if it does not exist
+    try {
+      if ( !fs.existsSync('./' + exportDir + '/' + year)) {
+        fs.mkdirSync('./' + exportDir + '/' + year);
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+    try {
+      if ( !fs.existsSync('./' + exportDir + '/' + year + '/' + month)) {
+        fs.mkdirSync('./' + exportDir + '/' + year + '/' + month);
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+    fs.writeFile(filepath, mdContents, (err) => {
       if (err) {
         console.error(err);
       } else {
