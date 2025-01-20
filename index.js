@@ -103,8 +103,32 @@ const path = require('node:path');
     geo.features[0].properties.start = geo.features[0].geometry.coordinates[0];
     geo.features[0].properties.end = geo.features[0].geometry.coordinates[geo.features[0].geometry.coordinates.length -1];
 
+    const year = fitJson.activity.timestamp.getFullYear();
+    const month = (fitJson.activity.timestamp.getMonth() + 1).toString().padStart(2, '0');
+    const exportDir = 'export';
+    const filepath = exportDir + '/' + year + '/' + month + '/' + filename + '.geojson';
+
+    // Make the year folder if it does not exist
     try {
-      await fs.writeFileSync('./export/' + filename + '.geojson', JSON.stringify(geo));
+      if ( !fs.existsSync('./' + exportDir + '/' + year)) {
+        fs.mkdirSync('./' + exportDir + '/' + year);
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+    try {
+      if ( !fs.existsSync('./' + exportDir + '/' + year + '/' + month)) {
+        fs.mkdirSync('./' + exportDir + '/' + year + '/' + month);
+      }
+    }
+    catch (err) {
+      console.error(err);
+    }
+
+    try {
+      await fs.writeFileSync(filepath, JSON.stringify(geo));
       console.log('Saved GeoJSON file.');
     } catch (err) {
       console.error(err);
@@ -118,7 +142,12 @@ const path = require('node:path');
 
     var fileContent = [];
 
-    const title = fitJSON.workout.wkt_name ? fitJSON.workout.wkt_name : filename;
+    let title = filename;
+
+    if (fitJSON.workout) {
+      title = fitJSON.workout.wkt_name;
+    }
+
     const distance = fitJSON.sessions[0].total_distance ? fitJSON.sessions[0].total_distance : 'Unknown';
     const time = fitJSON.sessions[0].total_timer_time ? fitJSON.sessions[0].total_timer_time : 'Unknown';
     const avg_speed = fitJSON.sessions[0].avg_speed ? fitJSON.sessions[0].avg_speed : 'Unknown';
@@ -193,7 +222,7 @@ const path = require('node:path');
 
   const fitFileContents = await readFitFile(filepath);
   const fitJson = await tranformFitData(fitFileContents);
-  const jsonFile = await saveFitJsonFile(fitJson, filename);
+  //const jsonFile = await saveFitJsonFile(fitJson, filename);
   const markdown = await createDocument(fitJson, filename);
   const geoJson = await createGeoJson(fitJson, filename);
 
